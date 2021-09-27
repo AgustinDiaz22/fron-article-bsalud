@@ -10,7 +10,7 @@ import { Article } from '../../interfaces/articles.interfaces';
 })
 export class ModalArticleComponent implements OnInit {
   @Input() article: any;
-  public movementForm: FormGroup;
+  public reasonForm: FormGroup;
   constructor(
 
     public _modalService: NgbModal,
@@ -22,13 +22,13 @@ export class ModalArticleComponent implements OnInit {
 
   ngOnInit() {
     console.log(this.article)
-    this.movementForm = new FormGroup({
+    this.reasonForm = new FormGroup({
       movimiento: new FormControl()
     });
   }
-  public addMovement(): void {
-    this.article.movement = this.movementForm.value.movimiento
-    this._ModalServiceService.saveMovement(this.article).subscribe(r => {
+  public addreason(): void {
+    this.article.reason = this.reasonForm.value.movimiento
+    this._ModalServiceService.savereason(this.article).subscribe(r => {
       if (r.status == 200) {
         this.activeModal.dismiss('close_click')
       } else if (r.status == 500) {

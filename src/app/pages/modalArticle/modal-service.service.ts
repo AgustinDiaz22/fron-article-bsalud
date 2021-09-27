@@ -12,9 +12,9 @@ export class ModalServiceService {
     public _http: HttpClient,
   ) { }
 
-  public saveMovement(article: any) {
+  public savereason(article: any) {
 
-    const URL = 'http://localhost:300/api/saveMovement';
+    const URL = 'http://localhost:300/api/savereason';
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
 

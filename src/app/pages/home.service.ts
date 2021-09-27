@@ -27,14 +27,14 @@ export class HomeService {
       })
     );
   }
-  public deleteMovement(article) {
-    const URL = 'http://localhost:300/api/deleteMovement';
+  public deletereason(article) {
+    const URL = 'http://localhost:300/api/deletereason';
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
 
     const params = new HttpParams()
       .set('_id', article._id)
-      
+
     return this._http.delete(URL + `/${article._id}`, {
       headers: headers,
       params: params
@@ -47,12 +47,16 @@ export class HomeService {
       })
     );
   }
-  public allMovement() {
-    const URL = 'http://localhost:300/api/allMovement';
+  public allreason(match: any = null) {
+    const URL = 'http://localhost:300/api/allreason';
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
+
+    const params = new HttpParams()
+      .set('match', JSON.stringify(match))
     return this._http.get(URL, {
-      headers: headers
+      headers: headers,
+      params: params
     }).pipe(
       map(res => {
         return res;

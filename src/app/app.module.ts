@@ -10,7 +10,7 @@ import { HomeComponent } from './pages/home/home.component';
 import { FilterArticlePipe } from './pipes/filter-article.pipe';
 import { ModalArticleComponent } from './pages/modalArticle/modal-article/modal-article.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FilterMovementPipe } from './pipes/filter-movement.pipe';
+import { FilterreasonPipe } from './pipes/filter-reason.pipe';
 
 import { ToastrModule } from 'ngx-toastr';
 
@@ -20,7 +20,7 @@ import { ToastrModule } from 'ngx-toastr';
     HomeComponent,
     FilterArticlePipe,
     ModalArticleComponent,
-    FilterMovementPipe
+    FilterreasonPipe
   ],
   imports: [
     BrowserModule,
@@ -28,7 +28,7 @@ import { ToastrModule } from 'ngx-toastr';
     NgbModule,
     FormsModule,
     ReactiveFormsModule,
-    ToastrModule.forRoot(),
+    ToastrModule.forRoot()
   ],
   exports:[
     ModalArticleComponent

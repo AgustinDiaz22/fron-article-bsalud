@@ -10,6 +10,11 @@ import { ToastrService } from 'ngx-toastr';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ModalServiceService } from '../modalArticle/modal-service.service';
 
+import * as XLSX from 'xlsx';
+import * as FileSaver from 'file-saver';
+
+const EXCEL_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
+const EXCEL_EXTENSION = '.xlsx';
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -18,13 +23,13 @@ import { ModalServiceService } from '../modalArticle/modal-service.service';
 })
 export class HomeComponent implements OnInit {
   public allArticles: any
-  public allMovement: any
+  public allreason: any
   public pageSize: number = 30;
   public page = 0;
-  public pageMovement = 0;
+  public pagereason = 0;
   public loading: boolean;
   public filterArticle = '';
-  public filterMovement = '';
+  public filterreason = '';
   public FILTER_PAG_REGEX = /[^0-9]/g;
   public collectionSize;
   public closeResult: string;
@@ -32,7 +37,9 @@ export class HomeComponent implements OnInit {
   public hide: boolean = false;
   public message: string = ''
   public alertMessage: string = '';
-  public movementForm: FormGroup;
+  public reasonForm: FormGroup;
+  public dateSearch: FormGroup;
+  public mode: string = '';
   constructor(
     private _homeService: HomeService,
     private _modalService: NgbModal,
@@ -51,35 +58,59 @@ export class HomeComponent implements OnInit {
 
 
   async ngOnInit() {
-    this.movementForm = new FormGroup({
-      movimiento: new FormControl()
+    this.reasonForm = new FormGroup({
+      Motivos: new FormControl()
+    });
+    this.dateSearch = new FormGroup({
+      date1: new FormControl(),
+      date2: new FormControl()
     });
   }
 
 
-  public addMovement(article): void {
+  public addreason(article): void {
     this.loading = true
-    article.movement = this.movementForm.value.movimiento
-    this._ModalServiceService.saveMovement(article).subscribe(r => {
+    article.reason = this.reasonForm.value.Motivos
+    this._ModalServiceService.savereason(article).subscribe(r => {
       if (r.status == 200) {
         this.loading = false
-        this.movementForm = new FormGroup({
-          movimiento: new FormControl()
+        this.reasonForm = new FormGroup({
+          Motivos: new FormControl()
         });
-        this.getAllMovement();
+
+        // this.getAllreasonStock(this.reasonForm.value.Motivos);
       } else if (r.status == 500) {
-        // this.getAllMovement();
+        // this.getAllAricles();
       }
     })
   }
-  public getAllMovement(): Promise<any> {
+  public getAllreasonStock(value: string): Promise<any> {
+
     this.loading = true;
+    let match;
+    if (this.dateSearch.value.date1 != null && this.dateSearch.value.date2 != null) {
+      match = {
+        creationDate: {
+          "$gte": new Date(this.dateSearch.value.date1 + "T15:00:00.000+00:00"),
+          "$lte": new Date(this.dateSearch.value.date2 + "T15:00:00.000+00:00")
+        },
+        "reason": value,
+        "operationType": { $ne: "D" }
+      }
+    } else {
+      match = {
+        "reason": value,
+        "operationType": { $ne: "D" }
+      }
+    }
     return new Promise<Array<any>>((resolve, reject) => {
-      this._homeService.allMovement()
+      this._homeService.allreason(match)
         .subscribe(r => {
-          this.allMovement = r
-          // console.log(this.allMovement)
+          this.allArticles = r;
+          this.mode = value;
+          this.page = 0;
           this.loading = false
+          // console.log(this.allreason)
         })
     })
   }
@@ -90,24 +121,51 @@ export class HomeComponent implements OnInit {
         .subscribe(r => {
           this.allArticles = r
           // console.log(this.allArticles)
-          this.getAllMovement();
-          // this.loading = false
+          this.mode = 'ARTICULOS'
+          this.loading = false
+          // this.getAllreason();
         })
 
     })
   }
+  public exportAsExcelFile(excelFileName: string): void {
+    let json = []
+    this.allArticles.forEach(element => {
+      json.push({
+        'Fecha': element.creationDate.substring(0,10),
+        'idArticulo': element.idArticulo,
+        'Nombre': element.arNombre,
+        'Descripcion': element.arDescripcion,
+        'Motivo': element.reason
+      }
+      )
+    });
+
+    const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(json);
+    const workbook: XLSX.WorkBook = { Sheets: { 'data': worksheet }, SheetNames: ['data'] };
+    const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    excelFileName = excelFileName+json[0].Fecha.substring(0,7)
+    this.saveAsExcelFile(excelBuffer, excelFileName);
+
+  }
+  private saveAsExcelFile(buffer: any, fileName: string): void {
+    const data: Blob = new Blob([buffer], { type: EXCEL_TYPE });
+    FileSaver.saveAs(data, fileName + EXCEL_EXTENSION);
+  }
+
   delete(article: any) {
     this.loading = true;
     return new Promise<Array<any>>((resolve, reject) => {
-      this._homeService.deleteMovement(article)
+      this._homeService.deletereason(article)
         .subscribe(r => {
-          console.log(r)
+          // console.log(r)
           if (r.status == 200) {
             // this.message = "Su licencia expiró, por favor, regularice su pago.";
             // this.showToast(this.message, "danger");
+
+            this.getAllreasonStock(r.res.reason);
             this.showMessage(r.message, 'success', true);
           }
-          this.getAllMovement();
           this.loading = false
         })
 
@@ -116,13 +174,13 @@ export class HomeComponent implements OnInit {
   open(content: any, article: any) {
     // this.modal=[]
     let modalRef: NgbModalRef;
-    console.log('r')
+    // console.log('r')
     modalRef = this._modalService.open(ModalArticleComponent, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.article = article;
-    console.log('r')
+    // console.log('r')
     modalRef.result.then(async (r: any) => {
       let a = await r
-      console.log(a)
+      // console.log(a)
     })
 
     // modalRef.result.then(
@@ -178,19 +236,6 @@ export class HomeComponent implements OnInit {
     this.filterArticle = search;
   }
 
-  onSearchMovement(search: string) {
-    // console.log(search)
-    this.pageMovement = 0;
-    this.filterMovement = search;
-  }
-  nextPageMovement() {
-    this.pageMovement += 5;
-  }
-
-  prevPageMovement() {
-    if (this.pageMovement > 0)
-      this.pageMovement -= 5;
-  }
   public showMessage(message: string, type: string, dismissible: boolean): void {
     this.alertMessage = message;
     this.alertConfig.type = type;

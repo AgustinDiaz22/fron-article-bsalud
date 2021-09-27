@@ -1,5 +1,5 @@
 
-<form [formGroup]="movementForm" (ngSubmit)="addMovement()" autocomplete="off">
+<form [formGroup]="reasonForm" (ngSubmit)="addreason()" autocomplete="off">
     <div class="modal-header">
         <h4 class="modal-title" id="modal-basic-title">Bootstrap Modal</h4>
         <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('close_click')">
@@ -18,8 +18,8 @@
                             <input formControlName='movimiento' type="radio" name="movimiento" value="No hay stock" required>
                             No Hay Stock</label>
                         <label class="radio-inline">
-                            <input formControlName='movimiento' type="radio" name="movimiento" value="Figura pero no aparece" required>
-                            Figura Pero No Aparece
+                            <input formControlName='movimiento' type="radio" name="movimiento" value="Figura pero Figura pero no está" required>
+                            Figura Pero Figura pero no está
                         </label>
                     </div>
 

@@ -1,9 +1,23 @@
 <div class="container" id="container1">
+    <h1>LISTA: {{ mode }}</h1>
     <div class="center-content" *ngIf="alertMessage !== ''">
         <ngb-alert [type]="alertConfig.type" [dismissible]="alertConfig.dismissible" (close)="alertMessage=''">
             {{alertMessage}}
         </ngb-alert>
     </div>
+    <div *ngIf='mode !== "ARTICULOS"' class="dateDownload">
+        <form action="" [formGroup]="dateSearch" (ngSubmit)="getAllreasonStock(mode)">
+            <label for="date1">Desde: </label>
+            <input type="date" value="date1" formControlName='date1'>
+            <label class="mr-5" for="date2">Hasta: </label>
+            <input type="date" value="date2" formControlName='date2'>
+            <input type="submit" value="Buscar por fecha">
+        </form>
+
+        <button    class="centre btn mc btn-primary" (click)="exportAsExcelFile(mode)">Exportar Excel</button>
+
+    </div>
+
 
     <input type="text" class="form-control mb-2 search" placeholder="Buscar Articulo" #txtSearch
         (keyup)="onSearchArticle( txtSearch.value )" />
@@ -21,42 +35,58 @@
             Siguientes
         </button>
         &nbsp;
-        <button class="btn btn-primary" (click)="ocultar()">
-            ocultar
+        <button class="btn btn-primary" (click)="getAllAricles()">
+            Articulos
         </button>
-
+        &nbsp;
+        <button class="btn btn-primary" (click)="getAllreasonStock('sin stock')">
+            Sin stock
+        </button>
+        &nbsp;
+        <button class="btn btn-primary" (click)="getAllreasonStock('Figura pero no está')">
+            Figura pero no está
+        </button>
 
         <table class="table" id="table1">
             <thead>
                 <tr>
+                    <th *ngIf='mode === "sin stock" || mode === "Figura pero no está" && mode !== "ARTICULOS"  '>Fecha</th>
                     <th>id</th>
                     <th>Nombre</th>
                     <th>Descripcion</th>
-                    <th>Movimiento</th>
+                    <th>Motivos</th>
                 </tr>
             </thead>
             <tbody>
                 <tr *ngFor="let item of allArticles | filterArticle:page:filterArticle" [ngStyle]="{ 'height': '70px'}">
+                    <td *ngIf='mode === "sin stock" || mode === "Figura pero no está" && mode !== "ARTICULOS"  '>
+                        {{item.creationDate.substring(0,10)}}</td>
                     <td>{{item.idArticulo}}</td>
                     <td>{{item.arNombre}}</td>
                     <td>{{item.arDescripcion}}</td>
-                    <td><button class="btn btn-lg btn-outline-primary" (click)="open(mymodal, item)">...</button></td>
-                    <!-- <td>
-                        <form [formGroup]="movementForm" (ngSubmit)="addMovement(item)" autocomplete="off" [ngStyle]="{'display': 'flex',
+                    <!-- <td><button class="btn btn-lg btn-outline-primary" (click)="open(mymodal, item)">...</button></td> -->
+                    <td *ngIf='mode === "sin stock" || mode === "Figura pero no está" && mode !== "ARTICULOS"  '>
+                        {{item.reason}}</td>
+                    <td *ngIf='mode === "sin stock" || mode == "Figura pero no está" '><button
+                            class="btn btn-lg btn-danger" (click)="delete(item)">Eliminar</button></td>
+
+                    <td *ngIf='mode == "ARTICULOS"'>
+                        <form [formGroup]="reasonForm" (ngSubmit)="addreason(item)" autocomplete="off" [ngStyle]="{'display': 'flex',
                         'justify-content': 'space-between'}">
                             <label class="radio-inline">
-                                <input formControlName='movimiento' type="radio" name="movimiento" value="No hay stock"
+                                <input formControlName='Motivos' type="radio" name="Motivos" value="sin stock"
                                     required>
-                                No Hay Stock</label>
+                                Sin Stock</label>
                             <label class="radio-inline">
-                                <input formControlName='movimiento' type="radio" name="movimiento"
-                                    value="Figura pero no aparece" required>
-                                Figura Pero No Aparece
+                                <input formControlName='Motivos' type="radio" name="Motivos" value="Figura pero no está"
+                                    required>
+                                Figura pero no está
                             </label>
-                            <button type="submit" class="btn btn-outline-dark">Guardar</button>
+                            <button type="submit" class="btn btn-success">Guardar</button>
 
                         </form>
-                    </td> -->
+                    </td>
+
                 </tr>
             </tbody>
         </table>
@@ -80,25 +110,25 @@
             <button type="button" class="btn btn-outline-dark" (click)="modal.close('Save click')">Ok</button>
         </div>
     </ng-template> -->
-<div class="container">
+<!-- <div class="container">
     <h2 *ngIf='loading == false'>Movimientos: </h2>
 
     <div class="row" *ngIf='loading == false'>
-        <input type="text" class="form-control mb-2 search" placeholder="Buscar Articulo" #txtSearchMovement
-            (keyup)="onSearchMovement( txtSearchMovement.value )" />
+        <input type="text" class="form-control mb-2 search" placeholder="Buscar Articulo" #txtSearchreason
+            (keyup)="onSearchreason( txtSearchreason.value )" />
     </div>
 
     <div *ngIf='loading == false'>
-        <button class="btn btn-primary" (click)="prevPageMovement()">
+        <button class="btn btn-primary" (click)="prevPagereason()">
             Anteriores
         </button>
         &nbsp;
-        <button class="btn btn-primary" (click)="nextPageMovement()"
-            [disabled]="(allMovement | filterMovement:pageMovement:filterMovement).length === 0">
+        <button class="btn btn-primary" (click)="nextPagereason()"
+            [disabled]="(allreason | filterreason:pagereason:filterreason).length === 0">
             Siguientes
         </button>
         &nbsp;
-        <button class="btn btn-primary" (click)="getAllMovement()">
+        <button class="btn btn-primary" (click)="getAllreason()">
             Actualizar
         </button>
 
@@ -114,17 +144,16 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let item of allMovement | filterMovement:pageMovement:filterMovement"
+                <tr *ngFor="let item of allreason | filterreason:pagereason:filterreason"
                     [ngStyle]="{ 'height': '70px'}">
                     <td>{{item.creationDate}}</td>
                     <td>{{item.idArticle}}</td>
                     <td>{{item.name}}</td>
                     <td>{{item.description}}</td>
-                    <td>{{item.movement}}</td>
+                    <td>{{item.reason}}</td>
                     <td><button class="btn btn-lg btn-outline-primary" (click)="delete(item)">Eliminar</button></td>
-                    <!-- <td><button class="btn btn-lg btn-outline-primary" (click)="edit(mymodal, item)">Editar</button></td> -->
                 </tr>
             </tbody>
         </table>
     </div>
-</div>
+</div> -->

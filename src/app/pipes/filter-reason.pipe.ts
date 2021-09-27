@@ -2,9 +2,9 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { Article } from '../pages/interfaces/articles.interfaces';
 
 @Pipe({
-  name: 'filterMovement'
+  name: 'filterreason'
 })
-export class FilterMovementPipe implements PipeTransform {
+export class FilterreasonPipe implements PipeTransform {
 
   transform(articles: Article[], page: number = 0, search: string = ''): any[] {
     if (search.length === 0)
