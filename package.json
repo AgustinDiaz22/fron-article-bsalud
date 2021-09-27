@@ -22,10 +22,12 @@
     "@ng-bootstrap/ng-bootstrap": "^5.3.1",
     "@popperjs/core": "^2.10.1",
     "bootstrap": "^5.1.1",
+    "file-saver": "^2.0.5",
     "jquery": "^3.6.0",
     "ngx-toastr": "^11.0.0",
     "rxjs": "~6.4.0",
     "tslib": "^1.10.0",
+    "xlsx": "^0.17.2",
     "zone.js": "~0.9.1"
   },
   "devDependencies": {
